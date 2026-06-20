@@ -31,8 +31,13 @@ if (!/<title>(?!\s*\[必填\])[^<]{2,}<\/title>/.test(visibleHtml)) errors.push(
 if (/\[必填\]|TODO|SLIDES_HERE/.test(visibleHtml)) errors.push("Unresolved placeholder remains.");
 if (!/<div\s+id=["']deck["']/.test(visibleHtml)) errors.push("Missing #deck runtime container.");
 if (!/<div\s+id=["']hint["']/.test(visibleHtml)) errors.push("Missing #hint control text.");
+if (!/<div\s+id=["']tools["']/.test(visibleHtml)) errors.push("Missing #tools edit/export toolbar.");
+if (!/data-action=["']edit["'][\s\S]*data-action=["']save["'][\s\S]*data-action=["']pptx["']/.test(visibleHtml)) {
+  errors.push("Missing Edit / Save HTML / PPTX toolbar actions.");
+}
 if (!/low-power|lowPower|低功耗|B 静态/.test(html)) errors.push("Low-power B mode text/code not found.");
 if (!/overview|ESC|Escape/.test(html)) errors.push("ESC overview code/text not found.");
+if (!/is-current|transition|translateY/.test(html)) errors.push("Simple slide animation code not found.");
 
 const slideCount = [...visibleHtml.matchAll(/<section\s+class=["'][^"']*\bslide\b/gi)].length;
 if (slideCount < 5) errors.push(`Expected at least 5 slides, found ${slideCount}.`);

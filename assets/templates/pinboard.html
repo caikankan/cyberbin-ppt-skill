@@ -136,8 +136,20 @@
   .thumb{aspect-ratio:16/9;background:var(--paper);border:2px solid rgba(255,255,255,.45);box-shadow:0 12px 28px rgba(0,0,0,.25);overflow:hidden;position:relative;cursor:pointer}
   .thumb .slide{transform-origin:top left;pointer-events:none}
   .thumb-label{position:absolute;left:10px;bottom:8px;z-index:3;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:white;text-shadow:0 1px 4px rgba(0,0,0,.7)}
+  .slide > :not(.pin-mark){opacity:0;transform:translateY(16px);transition:opacity .48s ease,transform .58s cubic-bezier(.22,.61,.36,1)}
+  .slide.is-current > :not(.pin-mark){opacity:1;transform:none}
+  .slide.is-current > :nth-child(2){transition-delay:.05s}
+  .slide.is-current > :nth-child(3){transition-delay:.1s}
+  .slide.is-current > :nth-child(4){transition-delay:.15s}
+  #tools{position:fixed;right:2.8vw;top:2.2vh;z-index:90;display:flex;gap:8px;font-family:var(--mono)}
+  #tools button{border:1px solid rgba(30,63,157,.45);background:rgba(255,248,220,.78);color:var(--ink);border-radius:999px;padding:8px 11px;font:600 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(10px)}
+  #tools button.active{background:var(--ink);color:var(--paper)}
+  body.on-dark #tools button{border-color:rgba(244,238,85,.42);background:rgba(30,63,157,.72);color:var(--paper)}
+  body.on-dark #tools button.active{background:var(--paper);color:var(--ink)}
+  body.editing [contenteditable="true"]{outline:2px dashed currentColor;outline-offset:4px;border-radius:4px}
   body.low-power #deck{transition:none}
   body.low-power *{animation:none!important}
+  body.low-power .slide > :not(.pin-mark){opacity:1;transform:none;transition:none}
 
   @media (max-width:760px){
     .slide{padding:3vh 4vw 5vh}
@@ -157,6 +169,11 @@
 </div>
 
 <div id="nav" aria-label="Slide navigation"></div>
+<div id="tools" aria-label="Deck tools">
+  <button type="button" data-action="edit">Edit</button>
+  <button type="button" data-action="save">Save HTML</button>
+  <button type="button" data-action="pptx">PPTX</button>
+</div>
 <div id="hint">←/→ · ESC overview · B 静态</div>
 <div id="overview" aria-label="Overview"></div>
 
@@ -164,10 +181,14 @@
 (() => {
   const deck = document.getElementById("deck");
   const nav = document.getElementById("nav");
+  const tools = document.getElementById("tools");
   const overview = document.getElementById("overview");
   const slides = [...document.querySelectorAll(".slide")];
   let current = 0;
   let startX = 0;
+  let editing = false;
+  const skillRoot = "__CYBERBIN_SKILL_ROOT__";
+  const editableSelector = "h1,h2,h3,h4,p,li,td,th,.title,.meta,.tiny,.kicker,.notice,.card-tag,.note,.lead,.small,.topline div,.footline div,.metric";
 
   function clamp(index){ return Math.max(0, Math.min(index, slides.length - 1)); }
   function isDark(slide){ return slide && (slide.classList.contains("dark") || slide.classList.contains("blue")); }
@@ -175,8 +196,64 @@
     current = clamp(index);
     deck.style.transform = `translateX(${-current * 100}vw)`;
     [...nav.children].forEach((dot, i) => dot.classList.toggle("active", i === current));
+    slides.forEach((slide, i) => slide.classList.toggle("is-current", i === current));
     document.body.classList.toggle("on-dark", isDark(slides[current]));
   }
+  function setEditing(value){
+    editing = Boolean(value);
+    document.body.classList.toggle("editing", editing);
+    tools?.querySelector('[data-action="edit"]')?.classList.toggle("active", editing);
+    slides.forEach((slide) => {
+      slide.querySelectorAll(editableSelector).forEach((el) => {
+        if (el.closest("svg") || el.closest("#overview")) return;
+        el.setAttribute("contenteditable", editing ? "true" : "false");
+        el.setAttribute("spellcheck", "false");
+      });
+    });
+  }
+  function download(name, mime, content){
+    const blob = new Blob([content], { type:mime });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  function saveHtml(){
+    const root = document.documentElement.cloneNode(true);
+    root.querySelectorAll("[contenteditable]").forEach((el) => {
+      el.removeAttribute("contenteditable");
+      el.removeAttribute("spellcheck");
+    });
+    root.querySelector("body")?.classList.remove("editing");
+    root.querySelectorAll(".is-current").forEach((el) => el.classList.remove("is-current"));
+    const navClone = root.querySelector("#nav");
+    const overviewClone = root.querySelector("#overview");
+    if (navClone) navClone.innerHTML = "";
+    if (overviewClone) {
+      overviewClone.innerHTML = "";
+      overviewClone.classList.remove("active");
+    }
+    const title = (root.querySelector("title")?.textContent || "cyberbin-deck").trim().replace(/[^\p{L}\p{N}._-]+/gu, "-").replace(/^-+|-+$/g, "") || "cyberbin-deck";
+    download(`${title}.html`, "text/html;charset=utf-8", `<!DOCTYPE html>\n${root.outerHTML}`);
+  }
+  async function showPptxHelp(){
+    const path = decodeURIComponent(location.pathname);
+    const command = skillRoot && !skillRoot.startsWith("__")
+      ? `cd "${skillRoot}" && npm install && node scripts/export-pptx.mjs "${path}" "./cyberbin-deck.pptx"`
+      : `node scripts/export-pptx.mjs "${path}" "./cyberbin-deck.pptx"`;
+    try { await navigator.clipboard?.writeText(command); } catch {}
+    alert(`PowerPoint export creates editable text boxes. Save HTML first if you edited the deck. Command copied when browser permissions allow:\\n\\n${command}`);
+  }
+  tools?.addEventListener("click", (event) => {
+    const action = event.target?.dataset?.action;
+    if (action === "edit") setEditing(!editing);
+    if (action === "save") saveHtml();
+    if (action === "pptx") showPptxHelp();
+  });
   function buildNav(){
     nav.innerHTML = "";
     slides.forEach((_, i) => {

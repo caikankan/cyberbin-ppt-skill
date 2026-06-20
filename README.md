@@ -3,6 +3,7 @@
 CyberBin is a local HTML PPT skill for generating horizontal, browser-based slide decks. v1 includes one public template: `pinboard`.
 
 The deck output is a single `index.html` file with horizontal navigation, keyboard/wheel/touch controls, ESC overview, and `B` static mode.
+Generated decks also include a small top-right toolbar for editing text, saving an edited HTML copy, and exporting a PowerPoint file.
 
 ## Current Template
 
@@ -51,13 +52,39 @@ node scripts/validate-deck.mjs ./demo-pinboard/ppt/index.html --expected-slides 
 
 Open `./demo-pinboard/ppt/index.html` in a browser.
 
+For a Chinese demo, use a Chinese title or pass `--language zh`:
+
+```bash
+node scripts/create-deck.mjs pinboard ./demo-pinboard-cn/ppt --title "AI 如何改变个人创作流程" --demo --slides 20 --language zh
+```
+
 ## Usage Notes
 
 - Default deck length is 20 slides unless another count is requested.
 - Chinese briefs produce Chinese-first decks.
+- Demo language is detected from the title; use `--language zh` or `--language en` to force it.
 - Full Chinese requests also localize decorative metadata.
 - Long Chinese level-1 titles in constrained `pin-detail` layouts use smaller Chinese-only sizing rules.
 - English decks keep the original English-scale title sizing.
+- The `Edit` button makes visible text editable in the browser.
+- The `Save HTML` button downloads a new edited HTML file.
+- The `PPTX` button shows the export command. PPTX export keeps the visual background and places main copy as editable PowerPoint text boxes.
+
+## Export PowerPoint
+
+Install dependencies once from the skill folder:
+
+```bash
+npm install
+```
+
+Then export any generated deck:
+
+```bash
+node scripts/export-pptx.mjs ./demo-pinboard-cn/ppt/index.html ./demo-pinboard-cn.pptx
+```
+
+The result is a `.pptx` file with editable main text. Decorative backgrounds and paperclip marks are kept as visual background.
 
 ## Contributing
 

@@ -1,0 +1,15 @@
+{
+  "name": "cyberbin-ppt-skill",
+  "version": "0.1.0",
+  "private": false,
+  "description": "CyberBin PPT Skill for generating local HTML slide decks.",
+  "type": "module",
+  "scripts": {
+    "check": "node --check scripts/create-deck.mjs && node --check scripts/validate-deck.mjs && node --check scripts/export-pptx.mjs",
+    "export:pptx": "node scripts/export-pptx.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.56.1",
+    "pptxgenjs": "^4.0.1"
+  }
+}

@@ -13,6 +13,8 @@ Run `scripts/validate-deck.mjs` first, then inspect in Chrome.
 - No paid template site URL appears in the output.
 - Every local `images/...` path exists.
 - Runtime controls remain: `deck`, `hint`, ESC overview code, and low-power `B` mode.
+- Runtime tools remain: `Edit`, `Save HTML`, and `PPTX`.
+- Simple slide entrance animation code remains active unless `B` static mode is enabled.
 - If the brief is Chinese, main content is Chinese and no English demo filler remains.
 - If the user requested full Chinese, decorative metadata is Chinese too.
 
@@ -36,6 +38,8 @@ node scripts/validate-deck.mjs path/to/index.html --expected-slides 5 --template
 - Chinese titles are split into readable lines instead of being compressed too small.
 - Text does not collide with navigation dots.
 - Images are not stretched by arbitrary source ratios.
+- `Edit` enables visible text editing; `Save HTML` downloads a clean edited copy.
+- `PPTX` export command works after `npm install`.
 - One deck uses one template system only.
 - A 20-slide deck follows the rhythm in `references/layouts.md`.
 - If reviewing a future template reference, confirm the 5-slide demo and 20-slide structure demo before making that template public.

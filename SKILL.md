@@ -5,7 +5,7 @@ description: Generate local single-file HTML PPT decks with CyberBin's pinboard 
 
 # CyberBin
 
-CyberBin creates local single-file HTML slide decks using its `pinboard` template. It keeps the Guizang-style deck runtime: one `index.html`, horizontal navigation, keyboard/wheel/touch controls, ESC overview, low-power `B` mode, and optional image slots.
+CyberBin creates local single-file HTML slide decks using its `pinboard` template. It keeps the Guizang-style deck runtime: one `index.html`, horizontal navigation, keyboard/wheel/touch controls, ESC overview, low-power `B` mode, simple entrance animation, browser text editing, edited HTML saving, PPTX export, and optional image slots.
 
 Do not edit the original Guizang PPT Skill. Use this skill's own files and bundled resources.
 
@@ -37,11 +37,12 @@ CyberBin should be Chinese-first because most expected use cases are Chinese PPT
 2. Confirm slide count; default is `20`.
 3. Decide language from the user's brief using the Language Rules above.
 4. Create a deck folder in the user's current workspace, normally `<project-name>/ppt`.
-5. Run `scripts/create-deck.mjs <template-id> <output-dir> --title "<deck title>" --slides <count>`.
+5. Run `scripts/create-deck.mjs <template-id> <output-dir> --title "<deck title>" --slides <count>`. For demos, add `--language zh` or `--language en` when the language should be forced.
 6. Replace `<!-- SLIDES_HERE -->` with slide sections based on `references/layouts.md`, unless using `--demo`.
 7. Put images in the deck's `images/` folder and reference them as `images/name.ext`.
 8. Run `scripts/validate-deck.mjs <output-dir>/index.html --expected-slides <count> --template <template-id>`.
 9. Open `index.html` in Chrome and visually inspect every slide.
+10. If the user asks for PowerPoint, run `npm install` once in the skill folder if needed, then `node scripts/export-pptx.mjs <output-dir>/index.html <output-name>.pptx`. Explain that the PPTX keeps decorative visuals as background while main text is editable PowerPoint text.
 
 ## Smoke Tests
 
@@ -87,6 +88,7 @@ For each future template, extract the visual system, add a dedicated template fi
 - `references/checklist.md`: delivery checks.
 - `scripts/create-deck.mjs`: create blank decks or demo structure decks.
 - `scripts/validate-deck.mjs`: static checks before browser inspection.
+- `scripts/export-pptx.mjs`: render HTML slides into a visual `.pptx`.
 
 ## Attribution And License Note
 

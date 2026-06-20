@@ -11,7 +11,7 @@ const templates = {
 };
 
 function usage() {
-  console.error("Usage: create-deck.mjs <template-id> <output-dir> --title \"Deck Title\" [--slides 20] [--demo]");
+  console.error("Usage: create-deck.mjs <template-id> <output-dir> --title \"Deck Title\" [--slides 20] [--demo] [--language zh|en]");
   console.error(`Templates: ${Object.keys(templates).join(", ")}`);
   process.exit(1);
 }
@@ -22,6 +22,7 @@ const outputDir = args[1];
 const title = readOption("--title", "Untitled Deck");
 const demo = args.includes("--demo");
 const slides = readPositiveInt("--slides", demo ? 5 : 20);
+const language = normalizeLanguage(readOption("--language", "")) || (containsCjk(title) ? "zh" : "en");
 
 if (!templateId || !outputDir || !templates[templateId]) usage();
 
@@ -38,6 +39,7 @@ html = html.replace(
   /<meta\s+name=["']viewport["'][^>]*>/,
   `$&\n<meta name="cyberbin-template" content="${templateId}">\n<meta name="cyberbin-slide-target" content="${slides}">`
 );
+html = html.replaceAll("__CYBERBIN_SKILL_ROOT__", skillRoot.replaceAll("\\", "\\\\").replaceAll('"', '\\"'));
 html = html.replace("[必填] 替换为 PPT 标题 · Deck Title", escapeHtml(title));
 
 const rhythm = [
@@ -64,7 +66,7 @@ const rhythm = [
 ];
 
 if (demo) {
-  const slideHtml = pinboardDemoSlides(title, slides, template);
+  const slideHtml = pinboardDemoSlides(title, slides, template, language);
   html = insertSlides(html, slideHtml);
   html = html.replaceAll("[必填]", "示例");
 }
@@ -73,6 +75,7 @@ fs.writeFileSync(indexPath, html);
 console.log(`Created ${indexPath}`);
 console.log(`Template: ${templateId}`);
 console.log(`Slides target: ${slides}`);
+console.log(`Language: ${language}`);
 console.log(`Images: ${path.join(outputDir, "images")}`);
 
 function readOption(name, fallback) {
@@ -91,6 +94,19 @@ function readPositiveInt(name, fallback) {
     process.exit(1);
   }
   return value;
+}
+
+function normalizeLanguage(raw) {
+  const value = String(raw || "").trim().toLowerCase();
+  if (!value) return "";
+  if (["zh", "cn", "chinese", "中文"].includes(value)) return "zh";
+  if (["en", "english", "英文"].includes(value)) return "en";
+  console.error("--language must be zh or en.");
+  process.exit(1);
+}
+
+function containsCjk(value) {
+  return /[\u3400-\u9fff]/.test(String(value));
 }
 
 function escapeHtml(value) {
@@ -149,7 +165,23 @@ function pinboardFoot(n, total, left = "CyberBin Field Office") {
   return `<div class="footline"><div>${escapeHtml(left)}</div><div>${pad(n)} / ${pad(total)}</div></div>`;
 }
 
-function pinboardDemoSlides(deckTitle, total, template) {
+function splitChineseTitle(value) {
+  const clean = String(value || "").replace(/\s+/g, " ").trim();
+  const match = clean.match(/^([A-Za-z0-9]+)\s*(.+)$/);
+  if (match && match[2].length > 6) {
+    const rest = match[2].replace(/\s+/g, "");
+    const cut = Math.min(4, Math.max(2, Math.ceil(rest.length / 2)));
+    return `${escapeHtml(match[1])} ${escapeHtml(rest.slice(0, cut))}<br><span class="hand">${escapeHtml(rest.slice(cut))}</span>`;
+  }
+  const chars = Array.from(clean.replace(/\s+/g, ""));
+  if (chars.length <= 8) return escapeHtml(clean);
+  const cut = Math.ceil(chars.length / 2);
+  return `${escapeHtml(chars.slice(0, cut).join(""))}<br><span class="hand">${escapeHtml(chars.slice(cut).join(""))}</span>`;
+}
+
+function pinboardDemoSlides(deckTitle, total, template, language = "en") {
+  if (language === "zh") return pinboardChineseDemoSlides(deckTitle, total, template);
+
   const safeTitle = escapeHtml(deckTitle);
   const topics = [
     "The trust gap",
@@ -360,6 +392,214 @@ function pinboardDemoSlides(deckTitle, total, template) {
     <div class="card warm">${pinSvg("pin-mark pin-card", "small")}<div class="card-tag">Point · 03</div><h3>One next move.</h3><p class="small">End the slide with a decision the team can make.</p><div class="bottom-note note">ship the ask.</div></div>
   </div>
   ${pinboardFoot(n, total)}
+</section>`;
+  };
+
+  return Array.from({ length: total }, (_, i) => {
+    const n = i + 1;
+    return (pages[i] || appendix)(n);
+  }).join("\n");
+}
+
+function pinboardChineseDemoSlides(deckTitle, total, template) {
+  const safeTitle = splitChineseTitle(deckTitle);
+  const topics = [
+    "创作入口变了",
+    "草稿方式变了",
+    "修改与分发变了",
+    "人该做什么",
+  ];
+  const pages = [
+    (n) => `
+<section class="slide light hero pin-cover" data-layout="pin-cover">
+  ${pinboardChrome("现场手册 · 第一卷", "CYBERBIN · 模板一")}
+  ${pinSvg("pin-mark pin-cover-1", "large")}
+  <div class="hero-main">
+    <div class="hero-copy">
+      <h1 class="display-tight zh-cover-title">${safeTitle}</h1>
+    </div>
+    <div class="hero-side">
+      <div class="note">给：创作者<br><span class="underline">一套流程。一个起点。</span></div>
+      ${pinSvg("pin-mark pin-cover-2", "cover2")}
+    </div>
+  </div>
+  ${pinboardFoot(n, total, "由 CyberBin 生成")}
+</section>`,
+    (n) => `
+<section class="slide light" data-layout="pin-agenda">
+  ${pinboardChrome("←〇 目录", "创作流程实验室 · 第一阶段")}
+  <div class="agenda-title">
+    <h2 class="headline">这份稿子<br><span class="hand">讲什么。</span></h2>
+  </div>
+  <div class="agenda-list">
+    ${topics.map((topic, i) => `
+    <div class="agenda-row">
+      <div class="num">${pad(i + 1)}</div>
+      <div class="title">${escapeHtml(topic)}</div>
+      ${pinSvg("pin-mark", "small")}
+      <div class="tiny meta">${["背景 · 4页", "方法 · 6页", "证据 · 6页", "行动 · 4页"][i]}</div>
+    </div>`).join("")}
+  </div>
+  ${pinboardFoot(n, total, "创作流程实验室")}
+</section>`,
+    (n) => `
+<section class="slide light" data-layout="pin-rules">
+  ${pinboardChrome("←〇 原则", "创作流程实验室 · 第二阶段")}
+  <div style="margin-top:4.5vh">
+    <h2 class="headline">先守住三条<br><span class="hand">创作线。</span></h2>
+    <p class="lead" style="margin-top:1.4vh">AI 可以加速表达，但不能替你决定立场、判断和最终承诺。</p>
+  </div>
+  <div class="cards-3">
+    <div class="card">${pinSvg("pin-mark pin-card", "small")}<div class="card-tag">原则 · 01</div><h3>先写真实句子。</h3><p class="small">如果你自己都不会这样说，这页就还没有写完。</p><div class="bottom-note note">先像人说话。</div></div>
+    <div class="card yellow">${pinSvg("pin-mark pin-card", "small")}<div class="card-tag">原则 · 02</div><h3>先给结构。</h3><p class="small">让 AI 处理草稿之前，先把目标、读者和层级说清楚。</p><div class="bottom-note note">结构先行。</div></div>
+    <div class="card warm">${pinSvg("pin-mark pin-card", "small")}<div class="card-tag">原则 · 03</div><h3>保留个人判断。</h3><p class="small">机器可以生成很多版本，但最终取舍仍然由发布者负责。</p><div class="bottom-note note">署名意味着负责。</div></div>
+  </div>
+  ${pinboardFoot(n, total, "创作流程实验室")}
+</section>`,
+    (n) => `
+<section class="slide dark blue" data-layout="pin-section">
+  ${pinboardChrome("第二部分", "方向与方法")}
+  ${pinSvg("pin-mark pin-corner", "large")}
+  <div style="margin:auto 0 10vh">
+    <h2 class="section-title zh-section-long">从想法<br>到发布，<br><span class="hand">流程变短。</span></h2>
+    <div class="note" style="margin-top:5vh">— 往下看 —</div>
+  </div>
+  ${pinboardFoot(n, total, "创作流程实验室")}
+</section>`,
+    (n) => `
+<section class="slide light" data-layout="pin-detail">
+  ${pinboardChrome("←〇 观察 · 详情", "创作流程实验室 · 第三阶段")}
+  <div class="detail-title">
+    <div class="notice">观察 · ${pad(n)}<br>流程变化</div>
+    <h2 class="headline zh-h1-long">AI 改变的不是一篇稿子，而是整条创作链路。</h2>
+  </div>
+  <div class="detail-cards">
+    <div class="card"><h3>发现什么</h3><p class="small"><strong>创作入口变了。</strong>过去从空白页开始，现在从问题、素材和提示词开始。</p><ul class="small"><li>先收集素材。</li><li>再定义读者。</li><li>最后进入生成。</li></ul><div class="bottom-note tiny">样例 · 创作流程</div></div>
+    <div class="card yellow"><h3>为什么重要</h3><p class="note">草稿速度变快，但判断成本没有消失。</p><p class="small">越容易生成，越需要在开头定义边界，否则后面会花更多时间返工。</p><div class="bottom-note tiny">方法 · 先定结构</div></div>
+    <div class="card warm"><h3>应该怎么做</h3><ul class="small"><li><strong>先写目标</strong>，不要直接让 AI 写全文。</li><li><strong>先给素材</strong>，减少空泛表达。</li><li><strong>先定口吻</strong>，再进入改写。</li></ul><div class="bottom-note tiny">行动 · 今天就能用</div></div>
+  </div>
+  ${pinboardFoot(n, total, "创作流程实验室")}
+</section>`,
+    (n) => `
+<section class="slide dark blue" data-layout="pin-chart">
+  ${pinboardChrome("←〇 修改次数", "第三阶段 · 证据")}
+  ${pinSvg("pin-mark pin-corner", "large")}
+  <div class="chart-layout">
+    <div>
+      <h2 class="section-title" style="font-size:clamp(58px,6vw,116px)">返工<br>减少在<br><span class="hand">第三轮。</span></h2>
+      <p class="lead" style="margin-top:5vh;color:var(--paper)">当素材、结构和口吻先被定义，后续修改会从“重写全文”变成“局部校准”。</p>
+      <div class="legend">
+        <div class="legend-row"><span class="legend-line dash"></span>无结构生成</div>
+        <div class="legend-row"><span class="legend-line thin"></span>有素材生成</div>
+        <div class="legend-row"><span class="legend-line"></span>结构 + 素材 + 口吻</div>
+      </div>
+    </div>
+    <div class="chart-box">
+      <svg viewBox="0 0 820 520" fill="none" aria-label="修改次数示意图">
+        <path d="M55 45V470H780" stroke="var(--ink)" stroke-width="2"/>
+        <path d="M55 45H780M55 170H780M55 295H780M55 420H780" stroke="var(--ink)" stroke-opacity=".18" stroke-dasharray="3 5"/>
+        <path d="M60 62C180 135 255 260 350 320C455 386 570 435 760 462" stroke="var(--ink)" stroke-width="4" stroke-linecap="round" stroke-dasharray="16 14"/>
+        <path d="M60 62C180 104 260 150 360 214C470 284 600 340 760 362" stroke="#2e57d7" stroke-width="9" stroke-linecap="round"/>
+        <path d="M60 62C215 96 340 145 465 197C570 241 638 280 760 306" stroke="var(--ink)" stroke-width="13" stroke-linecap="round"/>
+        <circle cx="60" cy="62" r="9" fill="var(--ink)"/>
+      </svg>
+    </div>
+  </div>
+  ${pinboardFoot(n, total, "创作流程实验室")}
+</section>`,
+    (n) => `
+<section class="slide light" data-layout="pin-workflow">
+  ${pinboardChrome("←〇 工作方式", "创作流程实验室 · 第四阶段")}
+  <div style="margin-top:4.5vh;display:grid;grid-template-columns:1fr 28vw;gap:5vw">
+    <h2 class="headline">从<span class="hand">想法</span><br>到发布，<br>分五步走。</h2>
+    <p class="lead">这是一条可重复路径：先定方向，再让 AI 进入具体环节。</p>
+  </div>
+  <div class="cards-5">
+    ${["定位","素材","草稿","修改","发布"].map((title, i) => `<div class="card ${i === 2 ? "warm" : i === 4 ? "" : "yellow"}">${pinSvg("pin-mark pin-card", "small")}<div class="step-no">${i + 1}</div><h3>${title}</h3><p class="small">${["定义对象、目的和读者状态。","整理观点、例子、数据和语气。","让 AI 先产出可修改版本。","按标题、结构、语气逐层检查。","按平台重新包装并交付。"][i]}</p>${i < 4 ? '<div class="arrow-link">→</div>' : ""}</div>`).join("")}
+  </div>
+  ${pinboardFoot(n, total, "创作流程实验室")}
+</section>`,
+    (n) => `
+<section class="slide light" data-layout="pin-table">
+  ${pinboardChrome("←〇 平台改写", "创作流程实验室 · 第四阶段")}
+  <div style="margin-top:4vh;display:grid;grid-template-columns:1fr 28vw;gap:4vw">
+    <h2 class="headline">同一个观点，<br>写成<span class="hand">不同形状。</span></h2>
+    <p class="lead">AI 最适合做平台改写，但前提是你先定义读者状态和内容目的。</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>平台</th><th>开头方式</th><th>内容重心</th><th>结尾动作</th></tr></thead>
+      <tbody>
+        <tr><td>短视频</td><td>反常识一句话</td><td>场景和冲突</td><td>引导评论</td></tr>
+        <tr><td>公众号</td><td>问题背景</td><td>完整论证</td><td>收藏转发</td></tr>
+        <tr><td>小红书</td><td>痛点直给</td><td>步骤和清单</td><td>保存照做</td></tr>
+        <tr><td>课程页</td><td>结果承诺</td><td>方法闭环</td><td>报名咨询</td></tr>
+      </tbody>
+    </table>
+  </div>
+  ${pinboardFoot(n, total, "创作流程实验室")}
+</section>`,
+    (n) => `
+<section class="slide light" data-layout="pin-numbers">
+  ${pinboardChrome("←〇 数字变化", "第四阶段 · 证据")}
+  <div style="margin-top:4vh;display:grid;grid-template-columns:1fr 26vw;gap:5vw">
+    <h2 class="headline">流程收益，<br><span class="hand">看三个数。</span></h2>
+    <p class="lead">不是追求一次生成完美，而是减少返工、提升稳定性。</p>
+  </div>
+  <div class="number-grid">
+    <div class="number-card">${pinSvg("pin-mark pin-card", "small")}<div class="metric">3<span class="unit">层</span></div><h3>修改<br>检查</h3><p class="small">标题、结构、语气分开处理。</p></div>
+    <div class="number-card yellow">${pinSvg("pin-mark pin-card", "small")}<div class="metric">5<span class="unit">步</span></div><h3>稳定<br>流程</h3><p class="small">定位、素材、草稿、修改、发布。</p></div>
+    <div class="number-card warm">${pinSvg("pin-mark pin-card", "small")}<div class="metric">20<span class="unit">页</span></div><h3>默认<br>节奏</h3><p class="small">足够讲清背景、方法、证据和行动。</p></div>
+  </div>
+  ${pinboardFoot(n, total, "创作流程实验室")}
+</section>`,
+    (n) => `
+<section class="slide light" data-layout="pin-quote">
+  ${pinboardChrome("←〇 创作者反馈", "第四阶段 · 证据")}
+  <div class="quote-panel">
+    ${pinSvg("pin-mark pin-card", "small")}
+    <div class="quote-mark">”</div>
+    <div>
+      <div class="quote-text">我不是让 AI 替我写，<span class="highlight">而是让它把每一步</span>都变得<span class="hand">更容易检查。</span></div>
+      <div class="tiny" style="margin-top:4vh">内容创作者<br>课程 / 短视频 / 产品文案</div>
+    </div>
+  </div>
+  ${pinboardFoot(n, total, "创作流程实验室")}
+</section>`,
+    (n) => `
+<section class="slide light" data-layout="pin-closing">
+  ${pinboardChrome("←〇 下一步", "创作流程实验室 · 第五阶段")}
+  <div class="final-grid">
+    <div class="final-blue">
+      <div class="kicker">从这里开始</div>
+      <h2 class="display-tight">先改<br>一条<br><span class="hand">流程。</span></h2>
+      <p class="lead">不要一次重做所有内容。先选一个高频场景，把它变成可复用流程。</p>
+      ${pinSvg("pin-mark pin-large", "large")}
+    </div>
+    <div class="final-white">
+      <h3 style="font-size:clamp(24px,2vw,38px);font-weight:900">本周怎么推进</h3>
+      ${["选一个场景","写出流程","连续复盘"].map((item, i) => `<div class="action-row"><div class="n">${i + 1}</div><div><h4 style="font-size:clamp(18px,1.28vw,26px);font-weight:900">${item}</h4><p class="small">${["比如短视频开头、课程大纲或产品说明。","记录输入、提示词、输出和修改规则。","每周保留一个版本，直到流程稳定。"][i]}</p></div></div>`).join("")}
+    </div>
+  </div>
+  ${pinboardFoot(n, total, "创作流程实验室")}
+</section>`,
+  ];
+
+  const appendix = (n) => {
+    const [, title, desc] = roleFor(n, total);
+    return `
+<section class="slide light" data-layout="pin-detail">
+  ${pinboardChrome(`←〇 ${title}`, "创作流程实验室 · 补充页")}
+  <div style="margin-top:4vh">
+    <h2 class="headline zh-h1-long">${escapeHtml(title)} <span class="hand">保持清楚。</span></h2>
+    <p class="lead" style="margin-top:2vh">${escapeHtml(desc)}</p>
+  </div>
+  <div class="cards-3">
+    <div class="card">${pinSvg("pin-mark pin-card", "small")}<div class="card-tag">要点 · 01</div><h3>一句明确判断。</h3><p class="small">把这一页最重要的话写成观众能复述的句子。</p><div class="bottom-note note">先让人听懂。</div></div>
+    <div class="card yellow">${pinSvg("pin-mark pin-card", "small")}<div class="card-tag">要点 · 02</div><h3>一个证明方式。</h3><p class="small">用数据、场景、对比或案例支撑这句话。</p><div class="bottom-note note">拿出证据。</div></div>
+    <div class="card warm">${pinSvg("pin-mark pin-card", "small")}<div class="card-tag">要点 · 03</div><h3>一个下一步。</h3><p class="small">让这一页最后落到一个具体动作。</p><div class="bottom-note note">把动作说清。</div></div>
+  </div>
+  ${pinboardFoot(n, total, "创作流程实验室")}
 </section>`;
   };
 
