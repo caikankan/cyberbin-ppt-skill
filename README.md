@@ -5,6 +5,8 @@ CyberBin is a local HTML PPT skill for generating horizontal, browser-based slid
 The deck output is a single `index.html` file with horizontal navigation, keyboard/wheel/touch controls, ESC overview, and `B` static mode.
 Generated decks also include a small top-right toolbar for editing text, saving an edited HTML copy, and exporting a PowerPoint file.
 
+![CyberBin Pinboard preview](./assets/preview/cyberbin-pinboard-preview.png)
+
 ## Current Template
 
 | ID | Best for | Style |

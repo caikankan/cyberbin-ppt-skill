@@ -30,6 +30,7 @@ CyberBin should be Chinese-first because most expected use cases are Chinese PPT
 - If the user provides Chinese source material but asks for an English deck, use English for all main content and keep template metadata consistent with the selected template.
 - For Chinese titles, prefer short spoken phrases. Split long titles over lines instead of shrinking text aggressively.
 - Do not leave demo English filler such as “The trust gap” or “What we found” in a real Chinese deck unless the user explicitly wants bilingual copy.
+- For Chinese `pinboard` decks, keep the hand-drawn paperclip marks: cover pins, agenda row pins, card pins, and dark-section corner pins. Do not omit them while localizing the copy.
 
 ## Generation Workflow
 

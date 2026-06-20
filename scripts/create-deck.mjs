@@ -32,6 +32,11 @@ const indexPath = path.join(outputDir, "index.html");
 
 fs.mkdirSync(outputDir, { recursive: true });
 fs.mkdirSync(path.join(outputDir, "images"), { recursive: true });
+fs.mkdirSync(path.join(outputDir, "assets"), { recursive: true });
+fs.copyFileSync(
+  path.join(skillRoot, "assets", "motion.min.js"),
+  path.join(outputDir, "assets", "motion.min.js")
+);
 
 let html = fs.readFileSync(templatePath, "utf8");
 html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(title)}</title>`);
@@ -177,6 +182,10 @@ function splitChineseTitle(value) {
   if (chars.length <= 8) return escapeHtml(clean);
   const cut = Math.ceil(chars.length / 2);
   return `${escapeHtml(chars.slice(0, cut).join(""))}<br><span class="hand">${escapeHtml(chars.slice(cut).join(""))}</span>`;
+}
+
+function inlineChineseTitle(value) {
+  return escapeHtml(String(value || "").replace(/\s+/g, " ").trim());
 }
 
 function pinboardDemoSlides(deckTitle, total, template, language = "en") {
@@ -402,7 +411,7 @@ function pinboardDemoSlides(deckTitle, total, template, language = "en") {
 }
 
 function pinboardChineseDemoSlides(deckTitle, total, template) {
-  const safeTitle = splitChineseTitle(deckTitle);
+  const safeTitle = inlineChineseTitle(deckTitle);
   const topics = [
     "创作入口变了",
     "草稿方式变了",
@@ -411,7 +420,7 @@ function pinboardChineseDemoSlides(deckTitle, total, template) {
   ];
   const pages = [
     (n) => `
-<section class="slide light hero pin-cover" data-layout="pin-cover">
+<section class="slide light hero pin-cover zh-cover" data-layout="pin-cover">
   ${pinboardChrome("现场手册 · 第一卷", "CYBERBIN · 模板一")}
   ${pinSvg("pin-mark pin-cover-1", "large")}
   <div class="hero-main">
@@ -429,7 +438,7 @@ function pinboardChineseDemoSlides(deckTitle, total, template) {
 <section class="slide light" data-layout="pin-agenda">
   ${pinboardChrome("←〇 目录", "创作流程实验室 · 第一阶段")}
   <div class="agenda-title">
-    <h2 class="headline">这份稿子<br><span class="hand">讲什么。</span></h2>
+    <h2 class="headline zh-inline-title">这份稿子 <span class="hand">讲什么。</span></h2>
   </div>
   <div class="agenda-list">
     ${topics.map((topic, i) => `
@@ -446,7 +455,7 @@ function pinboardChineseDemoSlides(deckTitle, total, template) {
 <section class="slide light" data-layout="pin-rules">
   ${pinboardChrome("←〇 原则", "创作流程实验室 · 第二阶段")}
   <div style="margin-top:4.5vh">
-    <h2 class="headline">先守住三条<br><span class="hand">创作线。</span></h2>
+    <h2 class="headline zh-inline-title">先守住三条 <span class="hand">创作线。</span></h2>
     <p class="lead" style="margin-top:1.4vh">AI 可以加速表达，但不能替你决定立场、判断和最终承诺。</p>
   </div>
   <div class="cards-3">
@@ -460,9 +469,9 @@ function pinboardChineseDemoSlides(deckTitle, total, template) {
 <section class="slide dark blue" data-layout="pin-section">
   ${pinboardChrome("第二部分", "方向与方法")}
   ${pinSvg("pin-mark pin-corner", "large")}
-  <div style="margin:auto 0 10vh">
-    <h2 class="section-title zh-section-long">从想法<br>到发布，<br><span class="hand">流程变短。</span></h2>
-    <div class="note" style="margin-top:5vh">— 往下看 —</div>
+  <div class="zh-section-center">
+    <h2 class="zh-section-title-inline">从想法到发布，<span class="hand">流程变短。</span></h2>
+    <p class="lead" style="color:var(--paper)">把想法、素材、草稿、修改和发布排进一条稳定链路。</p>
   </div>
   ${pinboardFoot(n, total, "创作流程实验室")}
 </section>`,
@@ -486,7 +495,7 @@ function pinboardChineseDemoSlides(deckTitle, total, template) {
   ${pinSvg("pin-mark pin-corner", "large")}
   <div class="chart-layout">
     <div>
-      <h2 class="section-title" style="font-size:clamp(58px,6vw,116px)">返工<br>减少在<br><span class="hand">第三轮。</span></h2>
+      <h2 class="section-title" style="font-size:clamp(50px,5.2vw,100px)">返工减少在 <span class="hand">第三轮。</span></h2>
       <p class="lead" style="margin-top:5vh;color:var(--paper)">当素材、结构和口吻先被定义，后续修改会从“重写全文”变成“局部校准”。</p>
       <div class="legend">
         <div class="legend-row"><span class="legend-line dash"></span>无结构生成</div>
@@ -511,7 +520,7 @@ function pinboardChineseDemoSlides(deckTitle, total, template) {
 <section class="slide light" data-layout="pin-workflow">
   ${pinboardChrome("←〇 工作方式", "创作流程实验室 · 第四阶段")}
   <div style="margin-top:4.5vh;display:grid;grid-template-columns:1fr 28vw;gap:5vw">
-    <h2 class="headline">从<span class="hand">想法</span><br>到发布，<br>分五步走。</h2>
+    <h2 class="headline zh-inline-title">从<span class="hand">想法</span>到发布，分五步走。</h2>
     <p class="lead">这是一条可重复路径：先定方向，再让 AI 进入具体环节。</p>
   </div>
   <div class="cards-5">
@@ -523,7 +532,7 @@ function pinboardChineseDemoSlides(deckTitle, total, template) {
 <section class="slide light" data-layout="pin-table">
   ${pinboardChrome("←〇 平台改写", "创作流程实验室 · 第四阶段")}
   <div style="margin-top:4vh;display:grid;grid-template-columns:1fr 28vw;gap:4vw">
-    <h2 class="headline">同一个观点，<br>写成<span class="hand">不同形状。</span></h2>
+    <h2 class="headline zh-inline-title">同一个观点，写成<span class="hand">不同形状。</span></h2>
     <p class="lead">AI 最适合做平台改写，但前提是你先定义读者状态和内容目的。</p>
   </div>
   <div class="table-wrap">
@@ -543,7 +552,7 @@ function pinboardChineseDemoSlides(deckTitle, total, template) {
 <section class="slide light" data-layout="pin-numbers">
   ${pinboardChrome("←〇 数字变化", "第四阶段 · 证据")}
   <div style="margin-top:4vh;display:grid;grid-template-columns:1fr 26vw;gap:5vw">
-    <h2 class="headline">流程收益，<br><span class="hand">看三个数。</span></h2>
+    <h2 class="headline zh-inline-title">流程收益，<span class="hand">看三个数。</span></h2>
     <p class="lead">不是追求一次生成完美，而是减少返工、提升稳定性。</p>
   </div>
   <div class="number-grid">
@@ -556,12 +565,17 @@ function pinboardChineseDemoSlides(deckTitle, total, template) {
     (n) => `
 <section class="slide light" data-layout="pin-quote">
   ${pinboardChrome("←〇 创作者反馈", "第四阶段 · 证据")}
-  <div class="quote-panel">
+  <div class="split-panel">
     ${pinSvg("pin-mark pin-card", "small")}
-    <div class="quote-mark">”</div>
-    <div>
-      <div class="quote-text">我不是让 AI 替我写，<span class="highlight">而是让它把每一步</span>都变得<span class="hand">更容易检查。</span></div>
-      <div class="tiny" style="margin-top:4vh">内容创作者<br>课程 / 短视频 / 产品文案</div>
+    <div class="split-side">
+      <div class="kicker">拆成两部分</div>
+      <h3 style="font-size:clamp(30px,2.6vw,52px);line-height:1.08;font-weight:900">判断在左，<br>证据在右。</h3>
+      <p class="lead">遇到核心问题页，不用巨大引号抢空间，而是把结论和解释拆开。</p>
+    </div>
+    <div class="split-main">
+      <h2>我不是让 AI 替我写，而是让它把每一步都变得<span class="hand">更容易检查。</span></h2>
+      <p class="lead">左侧负责说明这页的判断，右侧承载主要观点、引用或行动。这样信息更清楚，也不会出现无意义的大符号。</p>
+      <div class="tiny">内容创作者 · 课程 / 短视频 / 产品文案</div>
     </div>
   </div>
   ${pinboardFoot(n, total, "创作流程实验室")}

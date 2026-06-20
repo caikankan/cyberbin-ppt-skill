@@ -17,6 +17,7 @@ Run `scripts/validate-deck.mjs` first, then inspect in Chrome.
 - Simple slide entrance animation code remains active unless `B` static mode is enabled.
 - If the brief is Chinese, main content is Chinese and no English demo filler remains.
 - If the user requested full Chinese, decorative metadata is Chinese too.
+- Chinese `pinboard` decks keep paperclip marks on covers, agenda rows, cards, and dark section pages.
 
 ## Commands
 
