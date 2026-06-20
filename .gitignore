@@ -1,0 +1,20 @@
+.DS_Store
+node_modules/
+npm-debug.log*
+
+# Generated decks and local test output
+demo-*/
+*-demo/
+*-test/
+output/
+dist/
+tmp/
+temp/
+
+# Browser screenshots and previews
+preview-*.png
+*.webm
+
+# Local editor and system files
+.vscode/
+.idea/

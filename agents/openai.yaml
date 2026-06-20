@@ -1,0 +1,6 @@
+interface:
+  display_name: "CyberBin"
+  short_description: "Pinboard 风格 HTML PPT 生成工作流"
+  default_prompt: "Use $cyberbin to make a 20-slide pinboard HTML deck."
+policy:
+  allow_implicit_invocation: true

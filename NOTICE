@@ -1,0 +1,8 @@
+CyberBin PPT Skill
+
+CyberBin derives its HTML PPT runtime approach from Guizang PPT Skill:
+https://github.com/op7418/guizang-ppt-skill
+
+Guizang PPT Skill is licensed under AGPL-3.0.
+
+CyberBin v1 includes a custom pinboard template system and paperclip assets prepared for this skill. It does not include paid template website assets, copied template source code, or embedded reference screenshots.
