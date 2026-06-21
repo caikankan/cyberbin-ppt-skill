@@ -14,10 +14,12 @@ Run `scripts/validate-deck.mjs` first, then inspect in Chrome.
 - Every local `images/...` path exists.
 - Runtime controls remain: `deck`, `hint`, ESC overview code, and low-power `B` mode.
 - Runtime tools remain: `Edit`, `Save HTML`, and `PPTX`.
+- The runtime toolbar is hover-only and positioned away from the top-right metadata; it must not occupy or cover the header text.
 - Simple slide entrance animation code remains active unless `B` static mode is enabled.
 - If the brief is Chinese, main content is Chinese and no English demo filler remains.
+- If the brief is English or `--language en` is used, main content is English, the hint says `B static`, and no Chinese UI or demo copy remains.
 - If the user requested full Chinese, decorative metadata is Chinese too.
-- Chinese `pinboard` decks keep paperclip marks on covers, agenda rows, cards, and dark section pages.
+- `pinboard` decks keep bundled paperclip SVG marks on covers, agenda rows, cards, and dark section pages. Paperclips must not be redrawn, distorted, omitted, or placed over important text.
 
 ## Input Material Checks
 
@@ -37,6 +39,7 @@ Run `scripts/validate-deck.mjs` first, then inspect in Chrome.
 - ESC overview thumbnails remain visually readable; no thumbnail appears as a block of tiny text.
 - Long source text has been compressed, merged, rewritten, split, or omitted before entering the page.
 - The visible deck preserves title hierarchy, card spacing, paperclip placement, navigation, and whitespace.
+- If a source is too long for the template, reduce the content before generation. Never shrink text until it becomes unreadable just to keep more source material.
 - If information must be omitted for visual clarity, prefer a concise page plus speaker-facing thinking over a crowded slide.
 
 ## Commands
@@ -57,9 +60,13 @@ node scripts/validate-deck.mjs path/to/index.html --expected-slides 5 --template
 
 - First viewport clearly shows the subject and title.
 - Chinese titles use short presentation phrases and the pinboard heavy-display plus handwritten-emphasis pattern when useful.
+- English titles use the confirmed English pinboard proportions and avoid the old `trust gap` demo wording unless the user explicitly asks for that topic.
 - Overlong Chinese titles are rewritten or split into a better page structure; raw source text is not forced into the title.
 - Agenda items are short phrases; they do not contain OCR fragments, PDF extraction noise, or meaningless metadata.
 - Text does not collide with navigation dots.
+- Paperclips do not collide with titles, card labels, body text, footers, or page numbers.
+- Blue pages use visible yellow paperclip marks where a corner pin is present.
+- Top-right metadata is right-aligned; page numbers are right-aligned.
 - Images are not stretched by arbitrary source ratios.
 - `Edit` enables visible text editing; `Save HTML` downloads a clean edited copy.
 - `PPTX` export command works after `npm install`.

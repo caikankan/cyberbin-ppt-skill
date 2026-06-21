@@ -78,7 +78,7 @@ for (const ref of imageRefs) {
   if (!fs.existsSync(imagePath)) errors.push(`Missing local image: ${ref}`);
 }
 
-if (/<section\s+class=["'][^"']*\bslide\b(?![^>]*\b(light|dark|accent|split|hero)\b)/i.test(visibleHtml)) {
+if (/<section\s+class=["'][^"']*\bslide\b(?![^>]*\b(light|dark|blue|accent|split|hero)\b)/i.test(visibleHtml)) {
   warnings.push("At least one slide may be missing an explicit theme class.");
 }
 

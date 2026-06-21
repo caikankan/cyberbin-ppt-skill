@@ -123,6 +123,7 @@
   .split-main h2{font-size:clamp(36px,4.2vw,76px);line-height:1.06;font-weight:900;letter-spacing:-.04em}
 
   .final-grid{display:grid;grid-template-columns:1fr 1fr;gap:2vw;margin-top:4vh;flex:1}
+  .slide[data-layout="pin-closing"] .final-grid{margin-bottom:5.4vh}
   .final-blue{position:relative;background:var(--ink);color:var(--paper);border-radius:3px;padding:4vh 2.2vw;display:flex;flex-direction:column;justify-content:space-between}
   .final-white{position:relative;background:var(--paper-soft);color:var(--ink);border:2px solid var(--ink);box-shadow:6px 7px 0 var(--ink);padding:4vh 2.2vw}
   .final-blue > .pin-large{right:2vw;bottom:3vh;top:auto;transform:rotate(-8deg)}
@@ -137,6 +138,8 @@
   .pin-small{width:5.2vw;max-width:84px;min-width:56px}
   .pin-card{left:2.25vw;top:-1.65vh;transform:rotate(-5deg)}
   .pin-corner{right:4.2vw;top:12vh;opacity:.76;transform:rotate(14deg)}
+  .pin-img{object-fit:contain}
+  .pin-yellow{filter:brightness(0) saturate(100%) invert(92%) sepia(70%) saturate(772%) hue-rotate(354deg) brightness(104%) contrast(97%)}
 
   #nav{position:fixed;left:50%;bottom:2.2vh;transform:translateX(-50%);z-index:30;display:flex;gap:8px;padding:8px 12px;border:1px solid rgba(30,63,157,.35);border-radius:999px;background:rgba(244,238,85,.72);backdrop-filter:blur(10px)}
   #nav button{width:18px;height:6px;border:0;border-radius:999px;background:rgba(30,63,157,.25);cursor:pointer;transition:all .22s ease}

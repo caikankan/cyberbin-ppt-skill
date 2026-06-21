@@ -48,7 +48,7 @@ Every template should eventually support these roles:
 
 The `pinboard` public template is CyberBin v1's only public template. It is a distinct Pin & Paper system rather than a recolored magazine layout. It supports:
 
-- `pin-cover`: yellow field-guide cover, oversized left title, small mono metadata, inline SVG pin/arrow marks.
+- `pin-cover`: yellow field-guide cover, oversized left title, small mono metadata, bundled SVG pin/arrow marks.
 - `pin-agenda`: agenda page with large “What’s inside” heading, horizontal rows, dotted dividers, row metadata, and pin marks.
 - `pin-rules`: three paper cards with blue outline, offset shadow, card-specific bottom notes, and pin marks.
 - `pin-section`: deep blue chapter opener with oversized yellow title, handwritten emphasis, and minimal supporting text.
@@ -60,4 +60,4 @@ The `pinboard` public template is CyberBin v1's only public template. It is a di
 - `pin-quote`: oversized cream quote card with a highlight strip.
 - `pin-closing`: final ask / next action page.
 
-Use inline SVG/CSS for hand-drawn elements. Do not depend on external image assets. Do not include the right-side screenshot dot navigation from the reference images; those dots came from the source website viewer, not the template itself.
+Use bundled local SVG files for paperclip marks; do not redraw them inline. Do not include the right-side screenshot dot navigation from the reference images; those dots came from the source website viewer, not the template itself.

@@ -9,6 +9,8 @@ CyberBin creates local single-file HTML slide decks using its `pinboard` templat
 
 Do not edit the original Guizang PPT Skill. Use this skill's own files and bundled resources.
 
+The confirmed public visual target is the CyberBin `pinboard` system: bright yellow field, deep blue ink, cream paper cards, bundled paperclip SVG marks, hover-only edit toolbar, right-aligned top-right metadata, and Guizang-style slide entrance motion.
+
 ## Public Flow
 
 CyberBin is not an unlimited style generator. v1 currently provides exactly one public template:
@@ -52,8 +54,9 @@ CyberBin should be Chinese-first because most expected use cases are Chinese PPT
 - If the user provides English source material but asks for a Chinese PPT, localize the deck into natural Chinese instead of directly translating sentence by sentence.
 - If the user provides Chinese source material but asks for an English deck, use English for all main content and keep template metadata consistent with the selected template.
 - For Chinese titles, prefer short spoken phrases. Use the pinboard title pattern of heavy Chinese display text plus handwritten emphasis when useful; rewrite overlong titles instead of forcing raw source text into the layout.
+- For English decks, use the confirmed English `AI Delivery Tool Stack` visual proportions: English content, English hint text (`B static`), hover-only right-side tools, no Chinese residual labels, and no old `trust gap` demo content.
 - Do not leave demo English filler such as “The trust gap” or “What we found” in a real Chinese deck unless the user explicitly wants bilingual copy.
-- For Chinese `pinboard` decks, keep the hand-drawn paperclip marks: cover pins, agenda row pins, card pins, and dark-section corner pins. Do not omit them while localizing the copy.
+- For all `pinboard` decks, keep bundled paperclip SVG marks: cover pins, agenda row pins, card pins, and dark-section corner pins. Do not redraw, distort, omit, or let them overlap important text. Use yellow-filtered pins on dark blue pages.
 
 ## Generation Workflow
 
@@ -66,9 +69,10 @@ CyberBin should be Chinese-first because most expected use cases are Chinese PPT
 7. Run `scripts/create-deck.mjs <template-id> <output-dir> --title "<deck title>" --slides <count>`. For demos, add `--language zh` or `--language en` when the language should be forced.
 8. Replace `<!-- SLIDES_HERE -->` with slide sections based on `references/layouts.md`, unless using `--demo`.
 9. Put images in the deck's `images/` folder and reference them as `images/name.ext`.
-10. Run `scripts/validate-deck.mjs <output-dir>/index.html --expected-slides <count> --template <template-id>`.
-11. Open `index.html` in Chrome and visually inspect every slide, including ESC overview thumbnails, for dense unreadable text.
-12. If the user asks for PowerPoint, run `npm install` once in the skill folder if needed, then `node scripts/export-pptx.mjs <output-dir>/index.html <output-name>.pptx`. Explain that the PPTX keeps decorative visuals as background while main text is editable PowerPoint text.
+10. Preserve the hover-only toolbar. It should appear when the user hovers near the right-side tool area and must not occupy the top-right metadata position.
+11. Run `scripts/validate-deck.mjs <output-dir>/index.html --expected-slides <count> --template <template-id>`.
+12. Open `index.html` in Chrome and visually inspect every slide, including ESC overview thumbnails, for dense unreadable text, paperclip collisions, and toolbar/header conflicts.
+13. If the user asks for PowerPoint, run `npm install` once in the skill folder if needed, then `node scripts/export-pptx.mjs <output-dir>/index.html <output-name>.pptx`. Explain that the PPTX keeps decorative visuals as background while main text is editable PowerPoint text.
 
 ## Smoke Tests
 
@@ -84,6 +88,13 @@ Use a 20-slide structure demo:
 ```bash
 node scripts/create-deck.mjs pinboard ./demo-pinboard-20/ppt --title "Pinboard 20 Page Test" --demo --slides 20
 node scripts/validate-deck.mjs ./demo-pinboard-20/ppt/index.html --expected-slides 20 --template pinboard
+```
+
+Use the confirmed English demo:
+
+```bash
+node scripts/create-deck.mjs pinboard ./demo-pinboard-en/ppt --title "AI Delivery Tool Stack" --demo --slides 20 --language en
+node scripts/validate-deck.mjs ./demo-pinboard-en/ppt/index.html --expected-slides 20 --template pinboard
 ```
 
 ## Future Template Encapsulation Flow
