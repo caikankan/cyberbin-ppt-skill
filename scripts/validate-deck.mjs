@@ -6,17 +6,30 @@ const validTemplates = new Set([
   "pinboard",
 ]);
 
+const validThemes = new Set([
+  "pinboard-yellow",
+  "ikb-blue",
+  "lemon-yellow",
+  "lemon-green",
+  "safety-orange",
+]);
+
 const args = process.argv.slice(2);
 const file = args[0];
 if (!file) {
-  console.error("Usage: validate-deck.mjs <path/to/index.html> [--expected-slides N] [--template template-id]");
+  console.error("Usage: validate-deck.mjs <path/to/index.html> [--expected-slides N] [--template template-id] [--theme theme-id]");
   process.exit(1);
 }
 
 const expectedSlides = readOptionalInt("--expected-slides");
 const expectedTemplate = readOption("--template");
+const expectedTheme = readOption("--theme");
 if (expectedTemplate && !validTemplates.has(expectedTemplate)) {
   console.error(`Unknown template '${expectedTemplate}'. Valid templates: ${[...validTemplates].join(", ")}`);
+  process.exit(1);
+}
+if (expectedTheme && !validThemes.has(expectedTheme)) {
+  console.error(`Unknown theme '${expectedTheme}'. Valid themes: ${[...validThemes].join(", ")}`);
   process.exit(1);
 }
 
@@ -51,6 +64,17 @@ if (expectedTemplate && templateMeta !== expectedTemplate) {
 }
 if (templateMeta && !validTemplates.has(templateMeta)) {
   errors.push(`Invalid cyberbin-template meta value: ${templateMeta}`);
+}
+
+const themeMeta = readMeta("cyberbin-theme");
+if (!themeMeta) {
+  errors.push("Missing cyberbin-theme meta value.");
+}
+if (expectedTheme && themeMeta !== expectedTheme) {
+  errors.push(`Expected theme '${expectedTheme}', found '${themeMeta || "missing"}'.`);
+}
+if (themeMeta && !validThemes.has(themeMeta)) {
+  errors.push(`Invalid cyberbin-theme meta value: ${themeMeta}`);
 }
 
 const targetMeta = readMeta("cyberbin-slide-target");
@@ -95,6 +119,7 @@ if (errors.length) {
 console.log(`Deck validation passed: ${htmlPath}`);
 console.log(`Slides: ${slideCount}`);
 if (templateMeta) console.log(`Template: ${templateMeta}`);
+if (themeMeta) console.log(`Theme: ${themeMeta}`);
 if (targetMeta) console.log(`Slide target: ${targetMeta}`);
 if (imageRefs.length) console.log(`Images checked: ${imageRefs.length}`);
 if (warnings.length) {

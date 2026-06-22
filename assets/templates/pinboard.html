@@ -15,6 +15,11 @@
     --ink:#1e3f9d;
     --ink-deep:#1b3a91;
     --muted:#eef07a;
+    --accent:#f4ee55;
+    --accent-soft:#fbf49a;
+    --accent-on:#1e3f9d;
+    --section-bg:#1e3f9d;
+    --section-fg:#f4ee55;
     --line:rgba(30,63,157,.48);
     --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
     --sans:"Inter","Noto Sans SC",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
@@ -72,7 +77,7 @@
   .cards-5{display:grid;grid-template-columns:repeat(5,1fr);gap:1.2vw;margin-top:auto;margin-bottom:6.5vh}
   .card{position:relative;min-height:47vh;padding:4.1vh 1.6vw 3vh;background:var(--paper-soft);border:2px solid var(--ink);box-shadow:7px 8px 0 var(--ink);display:flex;flex-direction:column;gap:2vh}
   .card.warm{background:var(--paper-warm)}
-  .card.yellow{background:#fbf49a}
+  .card.yellow{background:var(--accent-soft)}
   .card h3{font-size:clamp(24px,2vw,39px);line-height:1.04;font-weight:900;letter-spacing:-.035em}
   .card .card-tag{font-family:var(--mono);font-size:clamp(10px,.8vw,13px);font-weight:600;letter-spacing:.28em;text-transform:uppercase;opacity:.72}
   .card .bottom-note{margin-top:auto}
@@ -118,7 +123,7 @@
   .highlight{background:#b9dcff;padding:0 .12em}
   .split-panel{position:relative;margin-top:auto;margin-bottom:6vh;min-height:76vh;background:var(--paper-soft);border:2px solid var(--ink);box-shadow:7px 9px 0 var(--ink);display:grid;grid-template-columns:32vw 1fr;gap:5vw;align-items:center;padding:7vh 7vw}
   .split-side{display:flex;flex-direction:column;gap:2.2vh}
-  .split-side .kicker{color:rgba(30,63,157,.72)}
+  .split-side .kicker{color:color-mix(in srgb,var(--ink) 72%,transparent)}
   .split-main{display:flex;flex-direction:column;gap:3vh}
   .split-main h2{font-size:clamp(36px,4.2vw,76px);line-height:1.06;font-weight:900;letter-spacing:-.04em}
 
@@ -275,7 +280,7 @@
       ? `cd "${skillRoot}" && npm install && node scripts/export-pptx.mjs "${path}" "./cyberbin-deck.pptx"`
       : `node scripts/export-pptx.mjs "${path}" "./cyberbin-deck.pptx"`;
     try { await navigator.clipboard?.writeText(command); } catch {}
-    alert(`PowerPoint export creates editable text boxes. Save HTML first if you edited the deck. Command copied when browser permissions allow:\\n\\n${command}`);
+    alert(`PowerPoint export creates an image-only PPTX for visual fidelity. Save HTML first if you edited the deck. Command copied when browser permissions allow:\\n\\n${command}`);
   }
   tools?.addEventListener("click", (event) => {
     const action = event.target?.dataset?.action;

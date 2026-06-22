@@ -8,6 +8,7 @@ Run `scripts/validate-deck.mjs` first, then inspect in Chrome.
 - `<title>` is real, not `[必填]`.
 - No visible `[必填]`, `TODO`, or `SLIDES_HERE` remains.
 - The deck includes `meta name="cyberbin-template"` with `pinboard`.
+- The deck includes `meta name="cyberbin-theme"` with one of: `pinboard-yellow`, `ikb-blue`, `lemon-yellow`, `lemon-green`, `safety-orange`.
 - The deck includes `meta name="cyberbin-slide-target"` with the intended slide count.
 - If the user did not request a count, validate against 20 slides.
 - No paid template site URL appears in the output.
@@ -20,6 +21,7 @@ Run `scripts/validate-deck.mjs` first, then inspect in Chrome.
 - If the brief is English or `--language en` is used, main content is English, the hint says `B static`, and no Chinese UI or demo copy remains.
 - If the user requested full Chinese, decorative metadata is Chinese too.
 - `pinboard` decks keep bundled paperclip SVG marks on covers, agenda rows, cards, and dark section pages. Paperclips must not be redrawn, distorted, omitted, or placed over important text.
+- If the user requests PPTX, export as image-only PPTX for visual fidelity. Do not promise editable PowerPoint text.
 
 ## Input Material Checks
 
@@ -47,13 +49,13 @@ Run `scripts/validate-deck.mjs` first, then inspect in Chrome.
 Validate a normal 20-slide deck:
 
 ```bash
-node scripts/validate-deck.mjs path/to/index.html --expected-slides 20 --template pinboard
+node scripts/validate-deck.mjs path/to/index.html --expected-slides 20 --template pinboard --theme pinboard-yellow
 ```
 
 Validate a 5-slide visual demo:
 
 ```bash
-node scripts/validate-deck.mjs path/to/index.html --expected-slides 5 --template pinboard
+node scripts/validate-deck.mjs path/to/index.html --expected-slides 5 --template pinboard --theme pinboard-yellow
 ```
 
 ## Visual Checks
@@ -69,10 +71,29 @@ node scripts/validate-deck.mjs path/to/index.html --expected-slides 5 --template
 - Top-right metadata is right-aligned; page numbers are right-aligned.
 - Images are not stretched by arbitrary source ratios.
 - `Edit` enables visible text editing; `Save HTML` downloads a clean edited copy.
-- `PPTX` export command works after `npm install`.
+- `PPTX` export command works after `npm install`, and the result is image-only slide screenshots.
 - One deck uses one template system only.
 - A 20-slide deck follows the rhythm in `references/layouts.md`.
 - If reviewing a future template reference, confirm the 5-slide demo and 20-slide structure demo before making that template public.
+
+## Theme Checks
+
+- `pinboard-yellow` keeps the current yellow paper and blue ink baseline.
+- `ikb-blue`, `lemon-yellow`, `lemon-green`, and `safety-orange` use a white base and only change approved color variables.
+- White-base themes must not move cards, paperclips, titles, toolbar, nav, or page numbers.
+- `lemon-yellow` body copy uses approximately 80% black for readability.
+- The selected theme is visible in the generated meta tag and passes validation.
+
+## Failure Cases That Must Be Fixed Before Handoff
+
+- ESC overview thumbnails look like dense documents or unreadable screenshots.
+- A slide contains PDF/PPT/TXT source text pasted wholesale.
+- Agenda rows contain OCR fragments, extraction garbage, or meaningless small metadata.
+- A title is clipped, drops a character, or wraps awkwardly when the intended layout requires one line.
+- A paperclip overlaps title text, card labels, body text, footer text, or page numbers.
+- A paperclip appears hand-drawn, distorted, recolored incorrectly, or different from the bundled SVG.
+- The top-right metadata is not right-aligned or is blocked by the edit toolbar.
+- A generated PPTX is described as editable text. It is image-only unless a future exporter explicitly changes that contract.
 
 ## Handoff
 

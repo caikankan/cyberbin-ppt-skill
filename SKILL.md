@@ -5,7 +5,7 @@ description: Generate local single-file HTML PPT decks with CyberBin's pinboard 
 
 # CyberBin
 
-CyberBin creates local single-file HTML slide decks using its `pinboard` template. It keeps the Guizang-style deck runtime: one `index.html`, horizontal navigation, keyboard/wheel/touch controls, ESC overview, low-power `B` mode, simple entrance animation, browser text editing, edited HTML saving, PPTX export, and optional image slots.
+CyberBin creates local single-file HTML slide decks using its `pinboard` template. It keeps the Guizang-style deck runtime: one `index.html`, horizontal navigation, keyboard/wheel/touch controls, ESC overview, low-power `B` mode, simple entrance animation, browser text editing, edited HTML saving, image-only PPTX export, and optional image slots.
 
 Do not edit the original Guizang PPT Skill. Use this skill's own files and bundled resources.
 
@@ -17,9 +17,30 @@ CyberBin is not an unlimited style generator. v1 currently provides exactly one 
 
 - `pinboard` — bright Pinboard Deck style for AI tools, SaaS products, growth reviews, courses, and startup pitches.
 
-If the user asks which templates are available, say CyberBin v1 currently includes only `pinboard`. If they request another style, explain that a new template must be encapsulated before it can be used.
+If the user does not specify a template, briefly show the CyberBin template menu before generating:
+
+| Template | Status | Use |
+|---|---|---|
+| `pinboard` | Available in v1 | AI tools, SaaS products, growth reviews, course decks, startup pitches |
+| Template 2-5 | Coming later | Not usable in v1 |
+
+Then ask them to confirm `pinboard` or proceed with `pinboard` if the request clearly fits. Do not imply Template 2-5 are available. If the user asks which templates are available, say CyberBin v1 currently includes only `pinboard`. If they request another style, explain that the new template must be encapsulated, tested, and added to the catalog before it can be used.
 
 Default to **20 slides** unless the user explicitly requests another slide count. If the user asks for “a deck” or “a PPT” without a count, plan 20 slides.
+
+## Theme Selection
+
+Themes are color presets for the same `pinboard` template. They do not change page structure, paperclip positions, animation, or Chinese/English typography rules.
+
+| Theme | Use |
+|---|---|
+| `pinboard-yellow` | Default yellow paper and blue ink. Use unless the user asks for another color mood. |
+| `ikb-blue` | White base with Klein blue accent. Use for AI products, launches, and methodology decks. |
+| `lemon-yellow` | White base with lemon yellow accent and 80% black body text. Use for youth, sport, retail, consumer goods, and Y2K topics. |
+| `lemon-green` | White base with lemon green accent. Use for ecology, health, and Gen Z brands. |
+| `safety-orange` | White base with safety orange accent. Use for caution, news, industrial, sport, and high-energy topics. |
+
+If the user does not specify a theme, use `pinboard-yellow`. If the user asks for a white-base version, recommend one of the white themes above.
 
 ## Supported Input Materials
 
@@ -63,16 +84,17 @@ CyberBin should be Chinese-first because most expected use cases are Chinese PPT
 1. Use `pinboard` from `references/template-catalog.md`.
 2. Identify the input material form: topic, PDF, PPT/PPTX, TXT/Markdown, image/screenshot, or structured outline.
 3. Confirm slide count; default is `20`.
-4. Decide language from the user's brief using the Language Rules above.
-5. Compress the source into slide-ready claims and page roles before writing HTML. Do not paste long source passages into slides.
-6. Create a deck folder in the user's current workspace, normally `<project-name>/ppt`.
-7. Run `scripts/create-deck.mjs <template-id> <output-dir> --title "<deck title>" --slides <count>`. For demos, add `--language zh` or `--language en` when the language should be forced.
-8. Replace `<!-- SLIDES_HERE -->` with slide sections based on `references/layouts.md`, unless using `--demo`.
-9. Put images in the deck's `images/` folder and reference them as `images/name.ext`.
-10. Preserve the hover-only toolbar. It should appear when the user hovers near the right-side tool area and must not occupy the top-right metadata position.
-11. Run `scripts/validate-deck.mjs <output-dir>/index.html --expected-slides <count> --template <template-id>`.
-12. Open `index.html` in Chrome and visually inspect every slide, including ESC overview thumbnails, for dense unreadable text, paperclip collisions, and toolbar/header conflicts.
-13. If the user asks for PowerPoint, run `npm install` once in the skill folder if needed, then `node scripts/export-pptx.mjs <output-dir>/index.html <output-name>.pptx`. Explain that the PPTX keeps decorative visuals as background while main text is editable PowerPoint text.
+4. Choose theme from the Theme Selection table; default is `pinboard-yellow`.
+5. Decide language from the user's brief using the Language Rules above.
+6. Compress the source into slide-ready claims and page roles before writing HTML. Do not paste long source passages into slides.
+7. Create a deck folder in the user's current workspace, normally `<project-name>/ppt`.
+8. Run `scripts/create-deck.mjs <template-id> <output-dir> --title "<deck title>" --slides <count> --theme <theme-id>`. For demos, add `--language zh` or `--language en` when the language should be forced.
+9. Replace `<!-- SLIDES_HERE -->` with slide sections based on `references/layouts.md` and `references/components.md`, unless using `--demo`.
+10. Put images in the deck's `images/` folder and reference them as `images/name.ext`.
+11. Preserve the hover-only toolbar. It should appear when the user hovers near the right-side tool area and must not occupy the top-right metadata position.
+12. Run `scripts/validate-deck.mjs <output-dir>/index.html --expected-slides <count> --template <template-id> --theme <theme-id>`.
+13. Open `index.html` in Chrome and visually inspect every slide, including ESC overview thumbnails, for dense unreadable text, paperclip collisions, and toolbar/header conflicts.
+14. If the user asks for PowerPoint, run `npm install` once in the skill folder if needed, then `node scripts/export-pptx.mjs <output-dir>/index.html <output-name>.pptx`. Explain that the PPTX is image-only for visual fidelity; to change text, edit and save the HTML first, then export again.
 
 ## Smoke Tests
 
@@ -80,21 +102,21 @@ Use a 5-slide visual demo:
 
 ```bash
 node scripts/create-deck.mjs pinboard ./demo-pinboard/ppt --title "Pinboard Demo" --demo --slides 5
-node scripts/validate-deck.mjs ./demo-pinboard/ppt/index.html --expected-slides 5 --template pinboard
+node scripts/validate-deck.mjs ./demo-pinboard/ppt/index.html --expected-slides 5 --template pinboard --theme pinboard-yellow
 ```
 
 Use a 20-slide structure demo:
 
 ```bash
 node scripts/create-deck.mjs pinboard ./demo-pinboard-20/ppt --title "Pinboard 20 Page Test" --demo --slides 20
-node scripts/validate-deck.mjs ./demo-pinboard-20/ppt/index.html --expected-slides 20 --template pinboard
+node scripts/validate-deck.mjs ./demo-pinboard-20/ppt/index.html --expected-slides 20 --template pinboard --theme pinboard-yellow
 ```
 
 Use the confirmed English demo:
 
 ```bash
 node scripts/create-deck.mjs pinboard ./demo-pinboard-en/ppt --title "AI Delivery Tool Stack" --demo --slides 20 --language en
-node scripts/validate-deck.mjs ./demo-pinboard-en/ppt/index.html --expected-slides 20 --template pinboard
+node scripts/validate-deck.mjs ./demo-pinboard-en/ppt/index.html --expected-slides 20 --template pinboard --theme pinboard-yellow
 ```
 
 ## Future Template Encapsulation Flow
@@ -120,12 +142,15 @@ For each future template, extract the visual system, add a dedicated template fi
 - `assets/motion.min.js`: local Motion One fallback inherited from Guizang.
 - `references/template-catalog.md`: public `pinboard` template description.
 - `references/template-intake.md`: sanitized notes for the confirmed `pinboard` visual system.
+- `references/components.md`: pinboard component usage rules.
 - `references/layouts.md`: default 20-slide rhythm and template page roles.
-- `references/themes.md`: colors, type, and image-slot rules.
+- `references/themes.md`: theme IDs, color presets, type, and image-slot rules.
+- `references/image-prompts.md`: optional image generation rules.
+- `references/screenshot-framing.md`: screenshot handling rules.
 - `references/checklist.md`: delivery checks.
 - `scripts/create-deck.mjs`: create blank decks or demo structure decks.
 - `scripts/validate-deck.mjs`: static checks before browser inspection.
-- `scripts/export-pptx.mjs`: render HTML slides into a visual `.pptx`.
+- `scripts/export-pptx.mjs`: render HTML slides into an image-only `.pptx`.
 
 ## Attribution And License Note
 

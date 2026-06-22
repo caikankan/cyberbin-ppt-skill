@@ -10,9 +10,103 @@ const templates = {
   "pinboard": { file: "pinboard.html", family: "pinboard", label: "Pinboard Deck" },
 };
 
+const themes = {
+  "pinboard-yellow": {
+    name: "Pinboard Yellow",
+    css: `
+      :root{
+        --paper:#f4ee55;
+        --paper-soft:#fff8dc;
+        --paper-warm:#ffefab;
+        --ink:#1e3f9d;
+        --ink-deep:#1b3a91;
+        --muted:#eef07a;
+        --accent:#f4ee55;
+        --accent-soft:#fbf49a;
+        --accent-on:#1e3f9d;
+        --section-bg:#1e3f9d;
+        --section-fg:#f4ee55;
+        --line:rgba(30,63,157,.48);
+      }`,
+  },
+  "ikb-blue": {
+    name: "IKB Blue",
+    css: `
+      :root{
+        --paper:#fafaf8;
+        --paper-soft:#fffdf0;
+        --paper-warm:#f1f5ff;
+        --ink:#002FA7;
+        --ink-deep:#002685;
+        --muted:#dce6ff;
+        --accent:#002FA7;
+        --accent-soft:#e7eeff;
+        --accent-on:#ffffff;
+        --section-bg:#002FA7;
+        --section-fg:#fafaf8;
+        --line:rgba(0,47,167,.42);
+      }`,
+  },
+  "lemon-yellow": {
+    name: "Lemon Yellow",
+    css: `
+      :root{
+        --paper:#fafaf8;
+        --paper-soft:#fffdf0;
+        --paper-warm:#fff4bc;
+        --ink:#333333;
+        --ink-deep:#1f1f1f;
+        --muted:#fff1a3;
+        --accent:#FFD500;
+        --accent-soft:#FFD500;
+        --accent-on:#333333;
+        --section-bg:#333333;
+        --section-fg:#FFD500;
+        --line:rgba(51,51,51,.42);
+      }`,
+  },
+  "lemon-green": {
+    name: "Lemon Green",
+    css: `
+      :root{
+        --paper:#fafaf8;
+        --paper-soft:#fffdf0;
+        --paper-warm:#efffc3;
+        --ink:#222222;
+        --ink-deep:#141414;
+        --muted:#e5ff82;
+        --accent:#C5E803;
+        --accent-soft:#C5E803;
+        --accent-on:#222222;
+        --section-bg:#222222;
+        --section-fg:#C5E803;
+        --line:rgba(34,34,34,.42);
+      }`,
+  },
+  "safety-orange": {
+    name: "Safety Orange",
+    css: `
+      :root{
+        --paper:#fafaf8;
+        --paper-soft:#fffdf0;
+        --paper-warm:#ffe3d4;
+        --ink:#333333;
+        --ink-deep:#1f1f1f;
+        --muted:#ffd8c4;
+        --accent:#FF6B35;
+        --accent-soft:#FF6B35;
+        --accent-on:#ffffff;
+        --section-bg:#333333;
+        --section-fg:#FF6B35;
+        --line:rgba(51,51,51,.42);
+      }`,
+  },
+};
+
 function usage() {
-  console.error("Usage: create-deck.mjs <template-id> <output-dir> --title \"Deck Title\" [--slides 20] [--demo] [--language zh|en]");
+  console.error("Usage: create-deck.mjs <template-id> <output-dir> --title \"Deck Title\" [--slides 20] [--demo] [--language zh|en] [--theme theme-id]");
   console.error(`Templates: ${Object.keys(templates).join(", ")}`);
+  console.error(`Themes: ${Object.keys(themes).join(", ")}`);
   process.exit(1);
 }
 
@@ -23,10 +117,16 @@ const title = readOption("--title", "Untitled Deck");
 const demo = args.includes("--demo");
 const slides = readPositiveInt("--slides", demo ? 5 : 20);
 const language = normalizeLanguage(readOption("--language", "")) || (containsCjk(title) ? "zh" : "en");
+const themeId = readOption("--theme", "pinboard-yellow");
 
 if (!templateId || !outputDir || !templates[templateId]) usage();
+if (!themes[themeId]) {
+  console.error(`Unknown theme '${themeId}'. Valid themes: ${Object.keys(themes).join(", ")}`);
+  process.exit(1);
+}
 
 const template = templates[templateId];
+const theme = themes[themeId];
 const templatePath = path.join(skillRoot, "assets", "templates", template.file);
 const indexPath = path.join(outputDir, "index.html");
 
@@ -44,11 +144,12 @@ html = html.replace(/<html\s+lang=["'][^"']+["']>/, `<html lang="${language === 
 html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(title)}</title>`);
 html = html.replace(
   /<meta\s+name=["']viewport["'][^>]*>/,
-  `$&\n<meta name="cyberbin-template" content="${templateId}">\n<meta name="cyberbin-slide-target" content="${slides}">`
+  `$&\n<meta name="cyberbin-template" content="${templateId}">\n<meta name="cyberbin-theme" content="${themeId}">\n<meta name="cyberbin-slide-target" content="${slides}">`
 );
 html = html.replaceAll("__CYBERBIN_SKILL_ROOT__", "CYBERBIN_SKILL_DIR");
 html = html.replace("[必填] 替换为 PPT 标题 · Deck Title", escapeHtml(title));
 html = html.replace("←/→ · ESC overview · B 静态", language === "zh" ? "←/→ · ESC overview · B 静态" : "←/→ · ESC overview · B static");
+html = applyTheme(html, theme);
 
 const rhythm = [
   ["Cover", "封面", "这页定义整份 deck 的语气和承诺。"],
@@ -84,6 +185,7 @@ console.log(`Created ${indexPath}`);
 console.log(`Template: ${templateId}`);
 console.log(`Slides target: ${slides}`);
 console.log(`Language: ${language}`);
+console.log(`Theme: ${themeId}`);
 console.log(`Images: ${path.join(outputDir, "images")}`);
 
 function readOption(name, fallback) {
@@ -134,6 +236,33 @@ function insertSlides(source, slideHtml) {
   return source
     .replace("<!-- SLIDES_HERE -->", slideHtml)
     .replace(/<!-- SLIDES_HERE[\s\S]*?-->/, slideHtml);
+}
+
+function applyTheme(source, selectedTheme) {
+  const css = `
+<style id="cyberbin-theme">
+${selectedTheme.css}
+  .card.yellow,
+  .number-card.yellow{background:var(--accent-soft)}
+  .slide.dark,.slide.blue{background:radial-gradient(circle at 78% 15%,rgba(255,255,255,.04),transparent 38%),var(--section-bg);color:var(--section-fg)}
+  .slide.dark .lead,.slide.blue .lead{color:var(--section-fg)!important}
+  .final-blue{background:var(--section-bg);color:var(--section-fg)}
+  .pill.fill{background:var(--accent);color:var(--accent-on)}
+  th{background:var(--ink);color:var(--paper)}
+  #nav{border-color:color-mix(in srgb,var(--ink) 35%,transparent);background:color-mix(in srgb,var(--paper) 76%,transparent)}
+  #nav button{background:color-mix(in srgb,var(--ink) 24%,transparent)}
+  #nav button.active{background:var(--accent)}
+  #hint{color:var(--ink)}
+  #tools button{border-color:color-mix(in srgb,var(--ink) 45%,transparent);background:color-mix(in srgb,var(--paper-soft) 86%,transparent);color:var(--ink)}
+  #tools button.active{background:var(--ink);color:var(--paper)}
+  body.on-dark #nav{border-color:color-mix(in srgb,var(--section-fg) 36%,transparent);background:color-mix(in srgb,var(--section-bg) 62%,transparent)}
+  body.on-dark #nav button{background:color-mix(in srgb,var(--section-fg) 28%,transparent)}
+  body.on-dark #nav button.active{background:var(--section-fg)}
+  body.on-dark #hint{color:var(--section-fg)}
+  body.on-dark #tools button{border-color:color-mix(in srgb,var(--section-fg) 42%,transparent);background:color-mix(in srgb,var(--section-bg) 76%,transparent);color:var(--section-fg)}
+  body.on-dark #tools button.active{background:var(--section-fg);color:var(--section-bg)}
+</style>`;
+  return source.replace("</style>", `</style>\n${css}`);
 }
 
 function pad(number) {

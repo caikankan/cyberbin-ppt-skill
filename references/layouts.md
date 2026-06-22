@@ -1,6 +1,29 @@
 # CyberBin Layouts
 
-Use one template system per deck. Default slide count is 20 unless the user explicitly requests another count.
+Use one template system per deck. CyberBin v1 exposes only `pinboard`. Default slide count is 20 unless the user explicitly requests another count.
+
+## Pre-Flight
+
+Before writing slide HTML, do the same kind of framework check used by Guizang:
+
+- Read `assets/templates/pinboard.html` and confirm the class names you plan to use exist in the template CSS.
+- Read `references/components.md` for the approved component grammar.
+- Read `references/themes.md` if the user asks for a color mood.
+- Do not invent new public layouts while generating a normal deck. Use the existing pinboard page roles below.
+- If the source material is too long, compress or split the message before it enters a slide. Do not shrink text until the page becomes unreadable.
+- Theme presets only change CSS variables. They must not change layout, paperclip positions, animation, title rules, or toolbar behavior.
+
+## Theme Rhythm
+
+Plan the slide rhythm before filling content:
+
+- `pin-cover` starts the deck.
+- `pin-agenda` appears early when the deck has more than 6 slides.
+- Use deep-blue section pages every 4-6 slides for breathing room.
+- Use card/table/number pages for proof and structure.
+- End with a closing page or summary card page.
+
+Do not create long runs of nearly identical card pages. If the content naturally becomes repetitive, combine points or switch to a table, workflow, or section page.
 
 ## Default 20-Slide Rhythm
 
@@ -61,3 +84,16 @@ The `pinboard` public template is CyberBin v1's only public template. It is a di
 - `pin-closing`: final ask / next action page.
 
 Use bundled local SVG files for paperclip marks; do not redraw them inline. Do not include the right-side screenshot dot navigation from the reference images; those dots came from the source website viewer, not the template itself.
+
+## Capacity Rules
+
+Pinboard pages are deliberately sparse. Use these rough limits:
+
+- Cover: title up to 2 short lines, subtitle up to 2 lines, one side note.
+- Agenda: 4-6 rows, each row under 10 Chinese characters or 5 English words when possible.
+- Three-card pages: 3 cards, each card one title plus 1-2 short sentences.
+- Table pages: 3-5 rows and 3-4 columns. For larger tables, summarize categories instead of reproducing source rows.
+- Quote pages: one sentence or two short clauses. If a quote is long, rewrite it as a claim.
+- Blue section pages: one large statement and one short supporting sentence.
+
+If a source page exceeds these limits, reduce it. Visual integrity wins over literal completeness.
